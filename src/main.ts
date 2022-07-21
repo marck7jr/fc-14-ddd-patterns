@@ -10,6 +10,6 @@ customer.Address = address;
 customer.activate();
 
 // Order Aggregate
-const item1 = new OrderItem("1", "Item 1", 10);
-const item2 = new OrderItem("2", "Item 2", 20);
+const item1 = new OrderItem("1", "Item 1", 10, "1", 1);
+const item2 = new OrderItem("2", "Item 2", 20, "2", 2);
 const order = new Order("1", "123", [item1, item2]);
