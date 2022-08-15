@@ -5,7 +5,7 @@ import Order from "../../domain/entity/order";
 import OrderItem from "../../domain/entity/order_item";
 import Product from "../../domain/entity/product";
 import CustomerModel from "../db/sequelize/model/customer.model";
-import OrderItemModel from "../db/sequelize/model/order-item.model copy";
+import OrderItemModel from "../db/sequelize/model/order-item.model";
 import OrderModel from "../db/sequelize/model/order.model";
 import ProductModel from "../db/sequelize/model/product.model";
 import CustomerRepository from "./customer.repository";
@@ -39,11 +39,13 @@ describe("Order repository test", () => {
   it("should create a new order", async () => {
     // Arrange
     const customerRepository = new CustomerRepository();
+    const productRepository = new ProductRepository();
+    const orderRepository = new OrderRepository();
+
     const customer = new Customer("1", "Customer 1");
     const address = new Address("Street 1", 1, "1", "City 1");
     customer.changeAddress(address);
 
-    const productRepository = new ProductRepository();
     const product = new Product("1", "Product 1", 10);
 
     const orderItem1 = new OrderItem(
@@ -54,7 +56,6 @@ describe("Order repository test", () => {
       10
     );
 
-    const orderRepository = new OrderRepository();
     const order = new Order("1", "1", [orderItem1]);
 
     // Act
@@ -76,12 +77,70 @@ describe("Order repository test", () => {
       total: order.total(),
       items: [
         {
-          id: orderItem1.id,
-          name: orderItem1.name,
-          price: orderItem1.price,
+          id: "1",
+          name: "Product 1",
+          order_id: "1",
           product_id: "1",
-          quantity: orderItem1.quantity,
-          order_id: "1"
+          quantity: 10,
+          total: 100,
+        },
+      ],
+    });
+  });
+
+  it("should update a order", async () => {
+    // Arrange
+    const customerRepository = new CustomerRepository();
+    const productRepository = new ProductRepository();
+    const orderRepository = new OrderRepository();
+
+    const address1 = new Address("Street 1", 1, "1", "City 1");
+    const customer1 = new Customer("1", "Customer 1");
+    customer1.changeAddress(address1);
+
+    const product1 = new Product("1", "Product 1", 10);
+    const product2 = new Product("2", "Product 2", 20);
+
+    const orderItem1 = new OrderItem("1", "Product 1", 10, "1", 10);
+    const orderItem2 = new OrderItem("2", "Product 2", 20, "2", 20);
+
+    const order1 = new Order("1", "1", [orderItem1]);
+    const updateOrderItem1 = new OrderItem("1", "Product 1", 10, "1", 100);
+    const updatedOrder1 = new Order("1", "1", [updateOrderItem1, orderItem2]);
+    // Act
+    await customerRepository.create(customer1);
+
+    await productRepository.create(product1);
+    await productRepository.create(product2);
+
+    await orderRepository.create(order1);
+    await orderRepository.update(updatedOrder1);
+
+    const orderModel = await OrderModel.findOne({
+      where: { id: "1" },
+      include: ["items"],
+    });
+    // Assert
+    expect(orderModel.toJSON()).toStrictEqual({
+      id: "1",
+      customer_id: "1",
+      total: updatedOrder1.total(),
+      items: [
+        {
+          id: "1",
+          name: "Product 1",
+          order_id: "1",
+          product_id: "1",
+          quantity: 100,
+          total: 1000,
+        },
+        {
+          id: "2",
+          name: "Product 2",
+          order_id: "1",
+          product_id: "2",
+          quantity: 20,
+          total: 400,
         },
       ],
     });

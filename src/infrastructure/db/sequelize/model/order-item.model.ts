@@ -6,7 +6,6 @@ import {
   PrimaryKey,
   Table,
 } from "sequelize-typescript";
-import CustomerModel from "./customer.model";
 import OrderModel from "./order.model";
 import ProductModel from "./product.model";
 
@@ -40,5 +39,5 @@ export default class OrderItemModel extends Model {
   declare name: string;
 
   @Column({ allowNull: false })
-  declare price: number;
+  declare total: number;
 }
