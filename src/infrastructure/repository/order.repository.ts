@@ -49,8 +49,28 @@ export default class OrderRepository implements OrderRepositoryInterface {
     );
   }
 
-  findAll(): Promise<Order[]> {
-    throw new Error("Method not implemented.");
+  async findAll(): Promise<Order[]> {
+    var orderModels = await OrderModel.findAll({
+      include: ["items"],
+    });
+
+    return orderModels.map(
+      (orderModel) =>
+        new Order(
+          orderModel.id,
+          orderModel.customer_id,
+          orderModel.items.map(
+            (orderModelItem) =>
+              new OrderItem(
+                orderModelItem.id,
+                orderModelItem.name,
+                orderModelItem.price,
+                orderModelItem.product_id,
+                orderModelItem.quantity
+              )
+          )
+        )
+    );
   }
 
   async update(entity: Order): Promise<void> {
