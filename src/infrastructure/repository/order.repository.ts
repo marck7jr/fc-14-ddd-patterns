@@ -1,4 +1,5 @@
 import Order from "../../domain/entity/order";
+import OrderItem from "../../domain/entity/order_item";
 import OrderRepositoryInterface from "../../domain/repository/order-repository";
 import OrderItemModel from "../db/sequelize/model/order-item.model";
 import OrderModel from "../db/sequelize/model/order.model";
@@ -13,7 +14,7 @@ export default class OrderRepository implements OrderRepositoryInterface {
         items: entity.items.map((item) => ({
           id: item.id,
           name: item.name,
-          total: item.total,
+          price: item.price,
           product_id: item.productId,
           quantity: item.quantity,
         })),
@@ -24,8 +25,28 @@ export default class OrderRepository implements OrderRepositoryInterface {
     );
   }
 
-  find(id: string): Promise<Order> {
-    throw new Error("Method not implemented.");
+  async find(id: string): Promise<Order> {
+    var orderModel = await OrderModel.findOne({
+      where: {
+        id,
+      },
+      include: ["items"],
+    });
+
+    return new Order(
+      orderModel.id,
+      orderModel.customer_id,
+      orderModel.items.map(
+        (orderItemModel) =>
+          new OrderItem(
+            orderItemModel.id,
+            orderItemModel.name,
+            orderItemModel.price,
+            orderItemModel.product_id,
+            orderItemModel.quantity
+          )
+      )
+    );
   }
 
   findAll(): Promise<Order[]> {
@@ -45,19 +66,17 @@ export default class OrderRepository implements OrderRepositoryInterface {
           id: orderItem.id,
           name: orderItem.name,
           order_id: entity.id,
-          total: orderItem.total,
+          price: orderItem.price,
           product_id: orderItem.productId,
           quantity: orderItem.quantity,
         });
       } else {
-        await orderItemModel.update(
-          {
-            name: orderItem.name,
-            total: orderItem.total,
-            product_id: orderItem.productId,
-            quantity: orderItem.quantity,
-          }
-        );
+        await orderItemModel.update({
+          name: orderItem.name,
+          price: orderItem.price,
+          product_id: orderItem.productId,
+          quantity: orderItem.quantity,
+        });
       }
     });
 
