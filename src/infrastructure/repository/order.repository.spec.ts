@@ -9,6 +9,7 @@ import OrderItemModel from "../db/sequelize/model/order-item.model copy";
 import OrderModel from "../db/sequelize/model/order.model";
 import ProductModel from "../db/sequelize/model/product.model";
 import CustomerRepository from "./customer.repository";
+import OrderRepository from "./order.repository";
 import ProductRepository from "./product.repository";
 
 describe("Order repository test", () => {
@@ -36,12 +37,13 @@ describe("Order repository test", () => {
   });
 
   it("should create a new order", async () => {
+    // Arrange
     const customerRepository = new CustomerRepository();
     const customer = new Customer("1", "Customer 1");
     const address = new Address("Street 1", 1, "1", "City 1");
     customer.changeAddress(address);
 
-    const producRepository = new ProductRepository();
+    const productRepository = new ProductRepository();
     const product = new Product("1", "Product 1", 10);
 
     const orderItem1 = new OrderItem(
@@ -55,8 +57,9 @@ describe("Order repository test", () => {
     const orderRepository = new OrderRepository();
     const order = new Order("1", "1", [orderItem1]);
 
+    // Act
     await customerRepository.create(customer);
-    await producRepository.create(product);
+    await productRepository.create(product);
     await orderRepository.create(order);
 
     const orderModel = await OrderModel.findOne({
@@ -66,6 +69,7 @@ describe("Order repository test", () => {
       include: ["items"],
     });
 
+    // Assert
     expect(orderModel.toJSON()).toStrictEqual({
       id: "1",
       customer_id: "1",
@@ -75,6 +79,7 @@ describe("Order repository test", () => {
           id: orderItem1.id,
           name: orderItem1.name,
           price: orderItem1.price,
+          product_id: "1",
           quantity: orderItem1.quantity,
           order_id: "1"
         },
