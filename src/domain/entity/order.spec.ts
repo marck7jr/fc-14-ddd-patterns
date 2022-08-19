@@ -20,6 +20,58 @@ describe("Order unit tests", () => {
     }).toThrowError("Items are required");
   });
 
+  it("should add a new item", () => {
+    // Arrange
+    const item1 = new OrderItem("1", "Item 1", 10, "Product 1", 1);
+    const item2 = new OrderItem("2", "Item 2", 20, "Product 2", 2);
+    const order1 = new Order("1", "1", [item1]);
+
+    // Act
+    order1.addItem(item2);
+
+    // Assert
+    expect(order1.items).toEqual([item1, item2]);
+    expect(order1.total()).toEqual(50);
+  });
+  
+  it("should throw a error when trying to add an invalid item", () => {
+    // Assert
+    expect(() => {
+      // Arrange
+      const item1 = new OrderItem("1", "Item 1", 10, "Product 1", 1);
+      const order1 = new Order("1", "1", [item1]);
+      
+      // Act
+      order1.addItem(undefined);
+    }).toThrowError("item is required");
+  });
+  
+  it("should remove a existing item", () => {
+    // Arrange
+    const item1 = new OrderItem("1", "Item 1", 10, "Product 1", 1);
+    const item2 = new OrderItem("2", "Item 2", 20, "Product 2", 2);
+    const order1 = new Order("1", "1", [item1, item2]);
+    
+    // Act
+    order1.removeItem("2");
+    
+    // Asset
+    expect(order1.items).toEqual([item1]);
+    expect(order1.total()).toEqual(10);
+  });
+
+  it("should throw a error when trying to remove a existing item with an invalid id", () => {
+    // Assert
+    expect(() => {
+      // Arrange
+      const item1 = new OrderItem("1", "Item 1", 10, "Product 1", 1);
+      const order1 = new Order("1", "1", [item1]);
+
+      // Act
+      order1.removeItem("");
+    }).toThrowError("id is required");
+  });
+
   it("should calculate total", () => {
     // Arrange
     const item1 = new OrderItem("1", "Item 1", 10, "Product 1", 1);
