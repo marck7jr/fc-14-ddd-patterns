@@ -88,6 +88,13 @@ describe("Order repository test", () => {
     });
   });
 
+  // MENSAGEM PRO REVISOR: Depois de 2 tentativas, acredito que agora entendi finalmente o que era pra ser feito.
+  // Na abordagem antiga dos testes eu tava criando novas instâncias com valores atualizados ao invés de atualizar a instância usada para a criação 🤡
+  // Pois na minha cabeça eu não deveria modificar muito o projeto, que era apenas implementar o que foi pedido: o repositório do Order
+  // Mas aí li e reli os feedbacks e ainda não estava entendendo o que era pra ser feito 
+  // até que me dei conta que Order não tinha métodos pra atualizar seus valores como já tinha nas outras entidades, por isso elas estavam certas 😅
+  // Implementei os métodos na entidade Order para atualizar dados da instância além dos métodos para manipular os OrderItem
+  // Se eu for aprovado, acredito que agora sim entendi como funciona os desafios e desculpa, sou LERDO mesmo pra pegar as coisas 🤣
   it("should update a order", async () => {
     // Arrange
     const customerRepository = new CustomerRepository();
@@ -138,13 +145,6 @@ describe("Order repository test", () => {
     });
 
     // Act
-    // Create a new customer
-    const address2 = new Address("Street 2", 2, "2", "City 2");
-    const customer2 = new Customer("2", "Customer 2");
-    customer2.changeAddress(address2);
-
-    await customerRepository.create(customer2);
-    
     // Update OrderItem1 with a new price and quantity
     const updatedOrderItem1 = new OrderItem(
       orderItem1.id,
@@ -154,17 +154,23 @@ describe("Order repository test", () => {
       100
     );
     // Update Order1 with a new customerId with updated OrderItem1 values
-    const updatedOrder1 = new Order(order1.id, customer2.id, [
-      updatedOrderItem1,
-    ]);
+    // Creates the new customer
+    const address2 = new Address("Street 2", 2, "2", "City 2");
+    const customer2 = new Customer("2", "Customer 2");
+    customer2.changeAddress(address2);
 
-    await orderRepository.update(updatedOrder1);
+    await customerRepository.create(customer2);
+
+    order1.changeCustomer("2");
+    order1.addItem(updatedOrderItem1);
+
+    await orderRepository.update(order1);
 
     const updatedOrderModel = await OrderModel.findOne({
       where: {
         id: order1.id,
       },
-      include: ["items"]
+      include: ["items"],
     });
 
     // Assert
@@ -196,7 +202,6 @@ describe("Order repository test", () => {
     customer.changeAddress(address);
 
     const product1 = new Product("1", "Product 1", 10);
-
 
     const orderItem1 = new OrderItem(
       "1",
@@ -250,18 +255,15 @@ describe("Order repository test", () => {
     );
 
     // Update Order1 adding a new OrderItem
-    const updatedOrder1 = new Order(order1.id, order1.customerId, [
-      ...order1.items,
-      orderItem2,
-    ]);
+    order1.addItem(orderItem2);
 
-    await orderRepository.update(updatedOrder1);
+    await orderRepository.update(order1);
 
     const updatedOrderModel = await OrderModel.findOne({
       where: {
         id: order1.id,
       },
-      include: ["items"]
+      include: ["items"],
     });
 
     // Assert
@@ -287,6 +289,101 @@ describe("Order repository test", () => {
         },
       ],
       total: 500,
+    });
+  });
+
+  it("should update a order removing a existing order item", async () => {
+    // Arrange
+    const customerRepository = new CustomerRepository();
+    const productRepository = new ProductRepository();
+    const orderRepository = new OrderRepository();
+
+    const customer = new Customer("1", "Customer 1");
+    const address = new Address("Street 1", 1, "1", "City 1");
+    customer.changeAddress(address);
+
+    const product1 = new Product("1", "Product 1", 10);
+    const product2 = new Product("2", "Product 2", 20);
+
+    const orderItem1 = new OrderItem(
+      "1",
+      product1.name,
+      product1.price,
+      product1.id,
+      10
+    );
+    const orderItem2 = new OrderItem(
+      "2",
+      product2.name,
+      product2.price,
+      product2.id,
+      20
+    );
+    
+    const order1 = new Order("1", "1", [orderItem1, orderItem2]);
+
+    await customerRepository.create(customer);
+    await productRepository.create(product1);
+    await productRepository.create(product2);
+    await orderRepository.create(order1);
+
+    const createdOrderModel = await OrderModel.findOne({
+      where: {
+        id: order1.id,
+      },
+      include: ["items"],
+    });
+
+    expect(createdOrderModel.toJSON()).toStrictEqual({
+      id: "1",
+      customer_id: "1",
+      items: [
+        {
+          id: "1",
+          name: "Product 1",
+          order_id: "1",
+          price: 10,
+          product_id: "1",
+          quantity: 10,
+        },
+        {
+          id: "2",
+          name: "Product 2",
+          order_id: "1",
+          price: 20,
+          product_id: "2",
+          quantity: 20,
+        },
+      ],
+      total: 500,
+    });
+
+    order1.removeItem(orderItem2);
+
+    await orderRepository.update(order1);
+
+    const updatedOrderModel = await OrderModel.findOne({
+      where: {
+        id: order1.id,
+      },
+      include: ["items"],
+    });
+
+    // Assert
+    expect(updatedOrderModel.toJSON()).toStrictEqual({
+      id: "1",
+      customer_id: "1",
+      items: [
+        {
+          id: "1",
+          name: "Product 1",
+          order_id: "1",
+          price: 10,
+          product_id: "1",
+          quantity: 10,
+        },
+      ],
+      total: 100,
     });
   });
 

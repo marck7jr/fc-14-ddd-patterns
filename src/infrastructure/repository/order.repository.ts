@@ -74,6 +74,25 @@ export default class OrderRepository implements OrderRepositoryInterface {
   }
 
   async update(entity: Order): Promise<void> {
+    const order = await OrderModel.findOne({
+      where: {
+        id: entity.id,
+      },
+      include: ["items"],
+    });
+
+    order.items.forEach(async (orderItem) => {
+      // If exists only on database
+      if (entity.items.find((x) => x.id == orderItem.id) == undefined) {
+        // Then it should be removed
+        await OrderItemModel.destroy({
+          where: {
+            id: orderItem.id,
+          },
+        });
+      }
+    });
+
     entity.items.forEach(async (orderItem) => {
       const orderItemModel = await OrderItemModel.findOne({
         where: {
@@ -100,17 +119,9 @@ export default class OrderRepository implements OrderRepositoryInterface {
       }
     });
 
-    await OrderModel.update(
-      {
-        id: entity.id,
-        customer_id: entity.customerId,
-        total: entity.total(),
-      },
-      {
-        where: {
-          id: entity.id,
-        },
-      }
-    );
+    await order.update({
+      customer_id: entity.customerId,
+      total: entity.total(),
+    });
   }
 }

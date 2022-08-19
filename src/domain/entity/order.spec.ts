@@ -77,23 +77,11 @@ describe("Order unit tests", () => {
     const order1 = new Order("1", "1", [item1, item2]);
     
     // Act
-    order1.removeItem("2");
+    order1.removeItem(item2);
     
     // Asset
     expect(order1.items).toEqual([item1]);
     expect(order1.total()).toEqual(10);
-  });
-
-  it("should throw a error when trying to remove a existing item with an invalid id", () => {
-    // Assert
-    expect(() => {
-      // Arrange
-      const item1 = new OrderItem("1", "Item 1", 10, "Product 1", 1);
-      const order1 = new Order("1", "1", [item1]);
-
-      // Act
-      order1.removeItem("");
-    }).toThrowError("orderItemId is required");
   });
 
   it("should calculate total", () => {

@@ -44,12 +44,8 @@ export default class Order {
         this._items.push(item);
     }
     
-    removeItem(orderItemId: string) : void {
-        if (orderItemId.length === 0){
-            throw new Error("orderItemId is required");
-        }
-        
-        this._items = this._items.filter(x => x.id != orderItemId);
+    removeItem(item: OrderItem) : void {        
+        this._items = this._items.filter(x => x != item);
     }
 
     validate(): boolean {
