@@ -20,6 +20,30 @@ describe("Order unit tests", () => {
     }).toThrowError("Items are required");
   });
 
+  it("should change customerId value", () => {
+    // Arrange
+    const item1 = new OrderItem("1", "Item 1", 10, "Product 1", 1);
+    const order1 = new Order("1", "1", [item1]);
+    
+    // Act
+    order1.changeCustomer("2");
+    
+    // Assert
+    expect(order1.customerId).toEqual("2");
+  });
+  
+  it("should throw a error when trying to change customerId value with a invalid id", () => {
+    // Assert
+    expect(() => {
+      // Arrange
+      const item1 = new OrderItem("1", "Item 1", 10, "Product 1", 1);
+      const order1 = new Order("1", "1", [item1]);
+
+      // Act
+      order1.changeCustomer("");
+    }).toThrowError("customerId is required");
+  });
+
   it("should add a new item", () => {
     // Arrange
     const item1 = new OrderItem("1", "Item 1", 10, "Product 1", 1);
@@ -69,7 +93,7 @@ describe("Order unit tests", () => {
 
       // Act
       order1.removeItem("");
-    }).toThrowError("id is required");
+    }).toThrowError("orderItemId is required");
   });
 
   it("should calculate total", () => {

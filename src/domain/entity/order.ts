@@ -26,6 +26,14 @@ export default class Order {
         return this._items;
     }
 
+    changeCustomer(customerId: string) : void {
+        if (customerId.length === 0){
+            throw new Error("customerId is required");
+        }
+        
+        this._customerId = customerId;
+    }
+
     addItem(item: OrderItem) : void {
         if (item == undefined){
             throw new Error("item is required");
@@ -34,12 +42,12 @@ export default class Order {
         this._items.push(item);
     }
     
-    removeItem(id: string) : void {
-        if (id.length === 0){
-            throw new Error("id is required");
+    removeItem(orderItemId: string) : void {
+        if (orderItemId.length === 0){
+            throw new Error("orderItemId is required");
         }
         
-        this._items = this._items.filter(x => x.id != id);
+        this._items = this._items.filter(x => x.id != orderItemId);
     }
 
     validate(): boolean {
