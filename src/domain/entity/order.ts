@@ -39,6 +39,8 @@ export default class Order {
             throw new Error("item is required");
         }
         
+        // Prevents duplicates items
+        this._items = this._items.filter(x => x.id != item.id);
         this._items.push(item);
     }
     
